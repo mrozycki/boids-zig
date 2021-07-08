@@ -42,3 +42,29 @@ pub fn rect(canvas: Canvas, start_x: isize, start_y: isize, width: usize, height
         }
     }
 }
+
+pub fn line(canvas: Canvas, x1: isize, y1: isize, x2: isize, y2: isize, color: Color) void {
+    const gradient = @intToFloat(f64, y1 - y2) / @intToFloat(f64, x1 - x2);
+    if (std.math.absFloat(gradient) <= 1.0) {
+        var x = std.math.min(x1, x2);
+        var y = @intToFloat(f64, if (x1 < x2) y1 else y2);
+        const end_x = std.math.max(x1, x2);
+        while (x <= end_x) : ({
+            x += 1;
+            y += gradient;
+        }) {
+            canvas.set_pixel(x, @floatToInt(isize, y), color);
+        }
+    } else {
+        const x_gradient = 1.0 / gradient;
+        var y = std.math.min(y1, y2);
+        var x = @intToFloat(f64, if (y1 < y2) x1 else x2);
+        const end_y = std.math.max(y1, y2);
+        while (y <= end_y) : ({
+            y += 1;
+            x += x_gradient;
+        }) {
+            canvas.set_pixel(@floatToInt(isize, x), y, color);
+        }
+    }
+}
