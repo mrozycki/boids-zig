@@ -68,3 +68,15 @@ pub fn line(canvas: Canvas, x1: isize, y1: isize, x2: isize, y2: isize, color: C
         }
     }
 }
+
+pub fn dot(canvas: Canvas, cx: isize, cy: isize, radius: isize, color: Color) void {
+    var y = cy - radius;
+    while (y < cy + radius) : (y += 1) {
+        var x = cx - radius;
+        while (x < cx + radius) : (x += 1) {
+            if ((x - cx) * (x - cx) + (y - cy) * (y - cy) <= radius * radius) {
+                canvas.set_pixel(x, y, color);
+            }
+        }
+    }
+}
