@@ -3,3 +3,5 @@ zig-out
 
 *.png
 *.ppm
+*.gif
+*.mp4
