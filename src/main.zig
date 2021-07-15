@@ -9,7 +9,7 @@ pub fn main() anyerror!void {
 
     const allocator = &arena.allocator;
 
-    var boids = try allocator.alloc(Boid, 100);
+    var boids = try allocator.alloc(Boid, 50);
     for (boids) |*boid| {
         boid.* = Boid.create_random(&rand.random);
     }
@@ -18,12 +18,13 @@ pub fn main() anyerror!void {
 
     var filename: ["render/frame_0000.ppm".len]u8 = undefined;
     var frame: usize = 0;
-    while (frame < 100) : (frame += 1) {
+    while (frame < 200) : (frame += 1) {
         var filename_writer = std.io.fixedBufferStream(&filename).writer();
         try filename_writer.print("render/frame_{d:0>4}.ppm", .{frame});
         std.log.info("Rendering frame #{} to {s}", .{ frame, filename });
 
         var file = try std.fs.cwd().createFile(std.mem.span(&filename), .{});
+        defer file.close();
         var writer = std.io.bufferedWriter(file.writer()).writer();
 
         canvas.clear(gfx.Color{ .r = 255, .g = 255, .b = 255 });
@@ -34,7 +35,7 @@ pub fn main() anyerror!void {
         try canvas.print(@TypeOf(writer), &writer);
 
         for (boids) |*boid| {
-            boid.update();
+            boid.update(boids, &rand.random);
         }
     }
 }
