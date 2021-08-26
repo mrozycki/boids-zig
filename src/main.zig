@@ -1,6 +1,6 @@
 const std = @import("std");
 const gfx = @import("gfx.zig");
-const Boid = @import("boid.zig").Boid;
+const Boid = @import("boid.zig");
 
 pub fn main() anyerror!void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
