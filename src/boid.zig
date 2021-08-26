@@ -36,6 +36,10 @@ fn Vec2(comptime T: type) type {
         pub fn unit(self: Self) Self {
             return self.with_magnitude(@as(T, 1));
         }
+
+        pub fn perp(self: Self) Self {
+            return Self{ .x = -self.y, .y = self.x };
+        }
     };
 }
 
@@ -145,15 +149,34 @@ pub fn update(self: *Boid, others: []Boid, rand: *std.rand.Random) void {
 
 pub fn render(self: Boid, canvas: gfx.Canvas) void {
     var screen_pos = self.pos.mul(@intToFloat(f64, canvas.width));
-    gfx.dot(canvas, @floatToInt(isize, screen_pos.x), @floatToInt(isize, screen_pos.y), 3, gfx.Color{ .r = 0, .g = 0, .b = 0 });
-
     var tip_screen_pos = self.velocity.with_magnitude(20.0).add(screen_pos);
+    var corners = .{
+        screen_pos.add(self.velocity.perp().with_magnitude(5.0)),
+        screen_pos.sub(self.velocity.perp().with_magnitude(5.0)),
+    };
+
     gfx.line(
         canvas,
-        @floatToInt(isize, screen_pos.x),
-        @floatToInt(isize, screen_pos.y),
+        @floatToInt(isize, corners[0].x),
+        @floatToInt(isize, corners[0].y),
         @floatToInt(isize, tip_screen_pos.x),
         @floatToInt(isize, tip_screen_pos.y),
+        gfx.Color{ .r = 0, .g = 0, .b = 0 },
+    );
+    gfx.line(
+        canvas,
+        @floatToInt(isize, corners[1].x),
+        @floatToInt(isize, corners[1].y),
+        @floatToInt(isize, tip_screen_pos.x),
+        @floatToInt(isize, tip_screen_pos.y),
+        gfx.Color{ .r = 0, .g = 0, .b = 0 },
+    );
+    gfx.line(
+        canvas,
+        @floatToInt(isize, corners[0].x),
+        @floatToInt(isize, corners[0].y),
+        @floatToInt(isize, corners[1].x),
+        @floatToInt(isize, corners[1].y),
         gfx.Color{ .r = 0, .g = 0, .b = 0 },
     );
 }
