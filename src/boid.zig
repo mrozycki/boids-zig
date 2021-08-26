@@ -54,10 +54,11 @@ fn random_velocity(rand: *std.rand.Random) Vec2(f64) {
 
 pos: Vec2(f64),
 velocity: Vec2(f64),
+id: usize,
 
-pub fn create_random(rand: *std.rand.Random) Boid {
+pub fn create_random(rand: *std.rand.Random, id: usize) Boid {
     const pos = Vec2(f64){ .x = rand.float(f64), .y = rand.float(f64) };
-    return .{ .pos = pos, .velocity = random_velocity(rand) };
+    return .{ .pos = pos, .velocity = random_velocity(rand), .id = id };
 }
 
 fn distance_to(self: *const Boid, other: *const Boid) f64 {
@@ -68,7 +69,7 @@ fn can_see(self: *const Boid, other: *const Boid) bool {
     const visibility_distance_limit: f64 = 0.12;
     const visibility_angle_limit: f64 = std.math.pi / 3.0;
 
-    if (self == other) {
+    if (self.id == other.id) {
         return false;
     }
 
@@ -88,8 +89,8 @@ pub fn update(self: *Boid, others: []Boid, rand: *std.rand.Random) void {
     const min_distance: f64 = 0.05;
 
     // average velocity adjustment
-    var neighbors: f64 = 0.0;
-    var total_neighbor_velocity: Vec2(f64) = .{ .x = 0.0, .y = 0.0 };
+    var neighbors: f64 = 1.0;
+    var total_neighbor_velocity: Vec2(f64) = self.velocity;
     for (others) |other| {
         if (self.can_see(&other)) {
             neighbors += 1.0;
@@ -97,10 +98,8 @@ pub fn update(self: *Boid, others: []Boid, rand: *std.rand.Random) void {
         }
     }
 
-    if (neighbors > 0.0) {
-        var average_neighbor_velocity = total_neighbor_velocity.mul(1.0 / neighbors);
-        self.velocity = self.velocity.add(average_neighbor_velocity.sub(self.velocity).mul(average_velocity_weight));
-    }
+    var average_neighbor_velocity = total_neighbor_velocity.mul(1.0 / neighbors);
+    self.velocity = self.velocity.add(average_neighbor_velocity.sub(self.velocity).mul(average_velocity_weight));
 
     // middle position adjustment
     var average_neighbor_distance: f64 = 0.0;
@@ -114,11 +113,11 @@ pub fn update(self: *Boid, others: []Boid, rand: *std.rand.Random) void {
         if (self.can_see(&other)) {
             const dist = self.distance_to(&other);
             const s2o = other.pos.sub(self.pos);
-            self.velocity = self.velocity.add(s2o.mul((dist - average_neighbor_distance) / dist * middle_position_weight / (neighbors + 1.0)));
+            self.velocity = self.velocity.add(s2o.mul((dist - average_neighbor_distance) / dist * middle_position_weight / neighbors));
 
             // minimum distance adjustment
-            if (dist < min_distance) {
-                self.velocity = self.velocity.add(s2o.mul(1.0 - min_distance / dist).mul(minimum_distance_weight / (neighbors + 1.0)));
+            if (dist < min_distance and self.id != other.id) {
+                self.velocity = self.velocity.add(s2o.mul(1.0 - min_distance / dist).mul(minimum_distance_weight / neighbors));
             }
         }
     }

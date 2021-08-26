@@ -10,8 +10,8 @@ pub fn main() anyerror!void {
     const allocator = &arena.allocator;
 
     var boids = try allocator.alloc(Boid, 50);
-    for (boids) |*boid| {
-        boid.* = Boid.create_random(&rand.random);
+    for (boids) |*boid, i| {
+        boid.* = Boid.create_random(&rand.random, i);
     }
 
     var canvas = try gfx.Canvas.new(800, 800, allocator);
