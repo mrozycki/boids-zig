@@ -9,16 +9,16 @@ pub fn main() anyerror!void {
 
     const allocator = &arena.allocator;
 
-    var boids = try allocator.alloc(Boid, 50);
+    var boids = try allocator.alloc(Boid, 200);
     for (boids) |*boid, i| {
         boid.* = Boid.create_random(&rand.random, i);
     }
 
-    var canvas = try gfx.Canvas.new(800, 800, allocator);
+    var canvas = try gfx.Canvas.new(1920, 1080, allocator);
 
     var filename: ["render/frame_0000.ppm".len]u8 = undefined;
     var frame: usize = 0;
-    while (frame < 200) : (frame += 1) {
+    while (frame < 1000) : (frame += 1) {
         var filename_writer = std.io.fixedBufferStream(&filename).writer();
         try filename_writer.print("render/frame_{d:0>4}.ppm", .{frame});
         std.log.info("Rendering frame #{} to {s}", .{ frame, filename });
